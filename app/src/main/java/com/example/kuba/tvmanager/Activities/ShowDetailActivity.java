@@ -24,6 +24,8 @@ public class ShowDetailActivity extends AppCompatActivity {
     private TVShow show;
     private ListView seasonList;
     private ArrayList<Episode> episodes;
+    private ArrayList<Episode> sEpisodes;
+    private ArrayList<String> numberOfSeasons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,8 @@ public class ShowDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_show_detail);
 
         episodes = EpisodeMapper.getEpisodes(this);
+        sEpisodes = new ArrayList<>();
+        numberOfSeasons = new ArrayList<>();
 
 
         seasonList = (ListView)findViewById(R.id.seasonList);
@@ -42,7 +46,30 @@ public class ShowDetailActivity extends AppCompatActivity {
         if(extras != null){
             String value = extras.getString("showId");
             show = TVShowMapper.selectShow(this, Integer.valueOf(value));
+            for(int i = 0; i < episodes.size(); i++){
+                if(episodes.get(i).getShowId().getId().equals(value)){
+                    sEpisodes.add(episodes.get(i));
+                }
+            }
         }
+
+        if(sEpisodes.size() > 0){
+            numberOfSeasons.add(sEpisodes.get(0).getSeason());
+            boolean add = true;
+            for(int i = 1; i < sEpisodes.size(); i++){
+                for(String s : numberOfSeasons){
+                    if(s.equals(sEpisodes.get(i).getSeason())){
+                        add = false;
+                    }
+                }
+                if(add){
+                    numberOfSeasons.add(sEpisodes.get(i).getSeason());
+                }
+                add = true;
+            }
+        }
+
+
 
         textMessage.setText(show.getName());
         textScore.setText(String.valueOf(show.getScore()));
@@ -53,17 +80,20 @@ public class ShowDetailActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return episodes.size();
+            //return episodes.size();
+            return numberOfSeasons.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return episodes.get(position);
+            //return episodes.get(position);
+            return numberOfSeasons.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return Long.valueOf(episodes.get(position).getId());
+            //return Long.valueOf(episodes.get(position).getId());
+            return position;
         }
 
         @Override
@@ -71,7 +101,8 @@ public class ShowDetailActivity extends AppCompatActivity {
             convertView = getLayoutInflater().inflate(R.layout.custom_season, null);
             //TextView textViewName = (TextView)convertView.findViewById(R.id.textViewName);
             CheckBox seasonCheck = (CheckBox)convertView.findViewById(R.id.boxSeason);
-            seasonCheck.setText(episodes.get(position).getName());
+            //seasonCheck.setText(episodes.get(position).getName());
+            seasonCheck.setText("Season " + numberOfSeasons.get(position));
             return convertView;
         }
     }
