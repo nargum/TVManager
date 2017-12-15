@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accounts>
+    <account>
+        <id>lob0008</id>
+        <name>Jakub</name>
+        <surname>Lobodinsky</surname>
+        <email>jlobodinsky6@gmail.com</email>
+        <login>Nargum</login>
+        <password>1234</password>
+    </account>
+    <account>
+        <id>lob0009</id>
+        <name>Matěj</name>
+        <surname>Lobodinský</surname>
+        <email>mlobodinsky6@gmail.com</email>
+        <login>Azares</login>
+        <password>5678</password>
+    </account>
+</accounts>
