@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.R;
+import com.example.kuba.tvmanager.TabActivity;
 
 import java.util.ArrayList;
 
@@ -66,7 +67,8 @@ public class LoginActivity extends AppCompatActivity {
             //warningTxt.setText("you have been logged in");
             nameTxt.setText("");
             passwordTxt.setText("");
-            Intent intent = new Intent(LoginActivity.this, ShowListActivity.class);
+            //Intent intent = new Intent(LoginActivity.this, ShowListActivity.class);
+            Intent intent = new Intent(LoginActivity.this, TabActivity.class);
             startActivity(intent);
         } else{
             Toast.makeText(this, "Wrong name or password", Toast.LENGTH_SHORT).show();
