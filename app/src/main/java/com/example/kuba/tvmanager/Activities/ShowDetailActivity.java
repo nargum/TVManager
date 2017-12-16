@@ -1,17 +1,22 @@
 package com.example.kuba.tvmanager.Activities;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Episode;
+import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
+import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
 import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.TVShow;
@@ -26,12 +31,14 @@ public class ShowDetailActivity extends AppCompatActivity {
     private ArrayList<Episode> episodes;
     private ArrayList<Episode> sEpisodes;
     private ArrayList<String> numberOfSeasons;
+    private Button buttonAddFavourite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_detail);
 
+        buttonAddFavourite = (Button)findViewById(R.id.buttonAddFavourite);
         episodes = EpisodeMapper.getEpisodes(this);
         sEpisodes = new ArrayList<>();
         numberOfSeasons = new ArrayList<>();
@@ -42,7 +49,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         seasonList.setAdapter(adapter);
         textMessage = (TextView)findViewById(R.id.textMessage);
         textScore = (TextView)findViewById(R.id.textScore);
-        Bundle extras = getIntent().getExtras();
+        final Bundle extras = getIntent().getExtras();
         if(extras != null){
             String value = extras.getString("showId");
             show = TVShowMapper.selectShow(this, Integer.valueOf(value));
@@ -68,6 +75,21 @@ public class ShowDetailActivity extends AppCompatActivity {
                 add = true;
             }
         }
+
+        buttonAddFavourite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                String accountId = extras.getString("accountId");
+                String showId = extras.getString("showId");
+
+                Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
+                TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
+
+
+                Toast.makeText(ShowDetailActivity.this, account.getLogin() + " " + show.getName() , Toast.LENGTH_SHORT).show();
+                FavouriteMapper.add(getApplicationContext(), account, show);
+            }
+        });
 
 
 

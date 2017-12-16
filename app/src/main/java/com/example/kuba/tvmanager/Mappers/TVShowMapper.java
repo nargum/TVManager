@@ -2,6 +2,7 @@ package com.example.kuba.tvmanager.Mappers;
 
 import android.content.Context;
 import android.util.Xml;
+import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.TVShow;
@@ -207,13 +208,13 @@ public class TVShowMapper {
                     break;
             }
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            Toast.makeText(ctx, "chzba v select show", Toast.LENGTH_SHORT).show();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Toast.makeText(ctx, "chzba v select show", Toast.LENGTH_SHORT).show();
         } catch (SAXException e) {
-            e.printStackTrace();
+            Toast.makeText(ctx, "chzba v select show", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            e.printStackTrace();
+            Toast.makeText(ctx, "chzba v select show", Toast.LENGTH_SHORT).show();
         }
 
         return show;

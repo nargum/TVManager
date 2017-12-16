@@ -3,8 +3,10 @@ package com.example.kuba.tvmanager.Mappers;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Xml;
+import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
+import com.example.kuba.tvmanager.TVShow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -216,6 +218,84 @@ public class AccountMapper {
             e.printStackTrace();
         }
         return accounts;
+    }
+
+    public static Account selectAccount(Context ctx, int id){
+        File xml = new File(ctx.getFilesDir() + "/accounts.xml");
+
+        if(!xml.exists()){
+            createDocument(ctx);
+        }
+
+        Account show = new Account();
+        String myId = String.valueOf(id);
+        boolean passInformation = false;
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            FileInputStream is = ctx.openFileInput("accounts.xml");
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(is);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+            NodeList accountList = doc.getElementsByTagName("account");
+            for(int i = 0; i < accountList.getLength(); i++) {
+                NodeList childList = accountList.item(i).getChildNodes();
+                for (int j = 0; j < childList.getLength(); j++) {
+
+                    Node node = childList.item(j);
+                    switch(node.getNodeName()){
+                        case "id":
+                            if(myId.equals(String.valueOf(node.getTextContent()))){
+                                show.setId(node.getTextContent());
+                                passInformation = true;
+                            }
+                            break;
+                        case "name":
+                            if(passInformation){
+                                show.setName(node.getTextContent());
+                            }
+                            break;
+                        case "surname":
+                            if(passInformation){
+                                show.setSurname(node.getTextContent());
+                            }
+                            break;
+                        case "email":
+                            if(passInformation){
+                                show.setEmail(node.getTextContent());
+                            }
+                            break;
+                        case "login":
+                            if(passInformation){
+                                show.setLogin(node.getTextContent());
+                            }
+                            break;
+                        case "password":
+                            if(passInformation){
+                                show.setPassword(node.getTextContent());
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+
+                }
+                if(passInformation)
+                    break;
+            }
+        } catch (ParserConfigurationException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (FileNotFoundException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (SAXException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        }
+
+        return show;
     }
 
     public static String path(Context ctx){

@@ -22,12 +22,14 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginBtn;
     private Button createBtn;
     private TextView warningTxt;
+    private Account account;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        account = new Account();
         nameTxt = (EditText)findViewById(R.id.nameTxt);
         passwordTxt = (EditText)findViewById(R.id.passwordTxt);
         loginBtn = (Button)findViewById(R.id.loginBtn);
@@ -59,6 +61,7 @@ public class LoginActivity extends AppCompatActivity {
             String password = String.valueOf(passwordTxt.getText().toString());
             if(name.equals(accounts.get(i).getLogin()) && password.equals(accounts.get(i).getPassword())){
                 ok = true;
+                account = accounts.get(i);
                 //break;
             }
         }
@@ -69,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
             passwordTxt.setText("");
             //Intent intent = new Intent(LoginActivity.this, ShowListActivity.class);
             Intent intent = new Intent(LoginActivity.this, TabActivity.class);
+            intent.putExtra("accountId", account.getId());
             startActivity(intent);
         } else{
             Toast.makeText(this, "Wrong name or password", Toast.LENGTH_SHORT).show();

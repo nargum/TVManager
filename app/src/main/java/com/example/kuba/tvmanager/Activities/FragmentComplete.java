@@ -42,6 +42,9 @@ public class FragmentComplete extends Fragment {
         FragmentComplete.CustomAdapter adapter = new FragmentComplete.CustomAdapter();
         listView.setAdapter(adapter);
 
+        Bundle extras = getActivity().getIntent().getExtras();
+        final String accountId = extras.getString("accountId");
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -52,6 +55,7 @@ public class FragmentComplete extends Fragment {
                 TVShow show = shows.get(position);
                 Intent intent = new Intent(getActivity(), ShowDetailActivity.class);
                 intent.putExtra("showId", show.getId());
+                intent.putExtra("accountId", accountId);
                 startActivity(intent);
             }
         });
