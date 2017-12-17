@@ -68,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
         if(ok){
             nameTxt.setText("");
             passwordTxt.setText("");
-            FavouriteMapper.delete(this);
+            //FavouriteMapper.delete(this);
             Intent intent = new Intent(LoginActivity.this, TabActivity.class);
             intent.putExtra("accountId", account.getId());
             startActivity(intent);

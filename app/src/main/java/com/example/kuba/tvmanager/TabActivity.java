@@ -3,6 +3,7 @@ package com.example.kuba.tvmanager;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -38,17 +39,49 @@ public class TabActivity extends AppCompatActivity {
         viewPager = (ViewPager)findViewById(R.id.container);
         setupViewPager(viewPager);
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                /*String title = (String) sectionsPageAdapter.getPageTitle(position);
+                Fragment frg = null;
+                if(position == 0){
+                    frg = new FragmentComplete();
+                    sectionsPageAdapter.replace(frg, title, position);
+                }
+                else{
+                    frg = new FragmentComplete();
+                    sectionsPageAdapter.replace(frg, title, position);
+                }*/
+                //setupViewPager(viewPager);
+
+                Fragment frg = sectionsPageAdapter.getItem(position);
+                final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.detach(frg);
+                ft.attach(frg);
+                ft.commit();
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
     }
 
     private void setupViewPager(ViewPager viewPager){
-        SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(new FragmentComplete(), "Show List");
-        adapter.addFragment(new FragmentFavourite(), "Favourite List");
-        viewPager.setAdapter(adapter);
+        sectionsPageAdapter = new SectionsPageAdapter(getSupportFragmentManager());
+        sectionsPageAdapter.addFragment(new FragmentComplete(), "Show List");
+        sectionsPageAdapter.addFragment(new FragmentFavourite(), "Favourite List");
+        viewPager.setAdapter(sectionsPageAdapter);
     }
 
 
