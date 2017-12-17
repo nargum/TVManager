@@ -26,7 +26,6 @@ import java.util.ArrayList;
  */
 
 public class FragmentComplete extends Fragment {
-    private static final String TAG = "FragmentComplete";
     private ListView listView;
     private ArrayList<TVShow> shows;
 
@@ -59,6 +58,8 @@ public class FragmentComplete extends Fragment {
                 startActivity(intent);
             }
         });
+
+
 
         return view;
     }

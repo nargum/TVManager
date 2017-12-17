@@ -1,6 +1,8 @@
 package com.example.kuba.tvmanager.Activities;
 
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,14 +16,18 @@ import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Episode;
+import com.example.kuba.tvmanager.Favourite;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
 import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
 import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.TVShow;
+import com.example.kuba.tvmanager.TabActivity;
 
 import java.util.ArrayList;
+
+import static java.security.AccessController.getContext;
 
 public class ShowDetailActivity extends AppCompatActivity {
     private TextView textMessage;
@@ -32,6 +38,7 @@ public class ShowDetailActivity extends AppCompatActivity {
     private ArrayList<Episode> sEpisodes;
     private ArrayList<String> numberOfSeasons;
     private Button buttonAddFavourite;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,15 +86,8 @@ public class ShowDetailActivity extends AppCompatActivity {
         buttonAddFavourite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                String accountId = extras.getString("accountId");
-                String showId = extras.getString("showId");
+                makeIt();
 
-                Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
-                TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
-
-
-                Toast.makeText(ShowDetailActivity.this, account.getLogin() + " " + show.getName() , Toast.LENGTH_SHORT).show();
-                FavouriteMapper.add(getApplicationContext(), account, show);
             }
         });
 
@@ -96,6 +96,22 @@ public class ShowDetailActivity extends AppCompatActivity {
         textMessage.setText(show.getName());
         textScore.setText(String.valueOf(show.getScore()));
         Toast.makeText(this, String.valueOf(episodes.size()), Toast.LENGTH_SHORT).show();
+    }
+
+    public void makeIt(){
+
+        Bundle extra = getIntent().getExtras();
+        String accountId = extra.getString("accountId");
+        String showId = extra.getString("showId");
+
+        Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
+        TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
+        FavouriteMapper.add(this, account, show);
+
+
+        Toast.makeText(ShowDetailActivity.this, "added" , Toast.LENGTH_SHORT).show();
+
+
     }
 
     class CustomAdapter2 extends BaseAdapter{

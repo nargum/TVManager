@@ -3,6 +3,7 @@ package com.example.kuba.tvmanager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ public class SectionsPageAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
+       // mFragmentList.remove(position);
+       // mFragmentTitleList.remove(position);
         return mFragmentList.get(position);
     }
 

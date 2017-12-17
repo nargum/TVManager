@@ -43,7 +43,7 @@ public class FavouriteMapper {
         FileOutputStream fos;
 
         try {
-            fos = ctx.openFileOutput("favourites.xml", Context.MODE_APPEND);
+            fos = ctx.openFileOutput("fav.xml", Context.MODE_APPEND);
 
             XmlSerializer serializer = Xml.newSerializer();
             serializer.setOutput(fos, "UTF-8");
@@ -59,7 +59,7 @@ public class FavouriteMapper {
             serializer.startTag(null, "accountId");
             serializer.text("0");
             serializer.endTag(null, "accountId");
-            serializer.endTag(null, "favourite");
+            //serializer.endTag(null, "favourite");
 
             serializer.endDocument();
 
@@ -74,17 +74,18 @@ public class FavouriteMapper {
     }
 
     private static Document getDocument(Context ctx){
-        File xml = new File(ctx.getFilesDir() + "/favourites.xml");
+        File xml = new File(ctx.getFilesDir() + "/fav.xml");
 
         if(!xml.exists()){
             createDocument(ctx);
         }
         Document d = null;
         try {
-            FileInputStream is = ctx.openFileInput("favourites.xml");
+            FileInputStream is = ctx.openFileInput("fav.xml");
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             d = builder.parse(is);
+           // is.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
@@ -118,7 +119,7 @@ public class FavouriteMapper {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         try {
             Transformer transformer = transformerFactory.newTransformer();
-            StreamResult result = new StreamResult(ctx.openFileOutput("favourites.xml", Context.MODE_PRIVATE));
+            StreamResult result = new StreamResult(ctx.openFileOutput("fav.xml", Context.MODE_PRIVATE));
             transformer.transform(source, result);
         } catch (TransformerConfigurationException e) {
             Toast.makeText(ctx, "chyba v add favourites", Toast.LENGTH_SHORT).show();
@@ -130,7 +131,7 @@ public class FavouriteMapper {
     }
 
     public static ArrayList<Favourite> getFavourites(Context ctx){
-        File xml = new File(ctx.getFilesDir() + "/favourites.xml");
+        File xml = new File(ctx.getFilesDir() + "/fav.xml");
 
         if(!xml.exists()){
             createDocument(ctx);
@@ -138,7 +139,7 @@ public class FavouriteMapper {
         ArrayList<Favourite> favourites = new ArrayList<>();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
-            FileInputStream is = ctx.openFileInput("favourites.xml");
+            FileInputStream is = ctx.openFileInput("fav.xml");
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(is);
             Element element = doc.getDocumentElement();
@@ -154,12 +155,12 @@ public class FavouriteMapper {
                     Node node = childList.item(j);
                     switch(node.getNodeName()){
                         case "showId":
-                            TVShow show = TVShowMapper.selectShow(ctx, Integer.valueOf(node.getTextContent()));
+                            TVShow show = TVShowMapper.selectShow(ctx, Integer.parseInt(node.getTextContent()));
                             favourite.setShowId(show);
                             break;
                         case "accountId":
-                            Account account = AccountMapper.selectAccount(ctx, Integer.valueOf(node.getTextContent()));
-                            account.setName(node.getTextContent());
+                            Account account = AccountMapper.selectAccount(ctx, Integer.parseInt(node.getTextContent()));
+                            favourite.setAccountId(account);
                             break;
                         default:
                             continue;
@@ -168,6 +169,8 @@ public class FavouriteMapper {
                 }
                 favourites.add(favourite);
             }
+
+            is.close();
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
@@ -178,5 +181,11 @@ public class FavouriteMapper {
             e.printStackTrace();
         }
         return favourites;
+    }
+
+    public static void delete(Context ctx){
+        File dir = ctx.getFilesDir();
+        File file = new File(dir, "fav.xml");
+        file.delete();
     }
 }

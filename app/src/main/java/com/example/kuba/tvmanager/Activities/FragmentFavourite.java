@@ -1,12 +1,16 @@
 package com.example.kuba.tvmanager.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,11 +32,13 @@ public class FragmentFavourite extends Fragment {
     private ArrayList<Favourite> newFavourites;
     private ArrayList<TVShow> shows;
     private ListView listView;
+    private Button buttonReaload;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.tab_favourite_list, container, false);
+        buttonReaload = (Button)view.findViewById(R.id.buttonReload);
 
         listView = (ListView)view.findViewById(R.id.listWiev);
         shows = new ArrayList<>();
@@ -40,7 +46,7 @@ public class FragmentFavourite extends Fragment {
         Bundle extra = getActivity().getIntent().getExtras();
         if(extra != null){
             String value = extra.getString("accountId");
-            favourites = FavouriteMapper.getFavourites(view.getContext());
+            favourites = FavouriteMapper.getFavourites(getActivity().getApplicationContext());
             for(int i = 0; i < favourites.size(); i++){
                 if(value.equals(favourites.get(i).getAccountId().getId())){
                     newFavourites.add(favourites.get(i));
@@ -54,8 +60,24 @@ public class FragmentFavourite extends Fragment {
 
         }
 
+        buttonReaload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                reload();
+            }
+        });
+
+        FragmentFavourite.CustomAdapter adapter = new CustomAdapter();
+        listView.setAdapter(adapter);
+
         return view;
     }
+
+    private void reload(){
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(this).attach(this).commit();
+    }
+
 
     class CustomAdapter extends BaseAdapter {
 

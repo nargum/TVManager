@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
+import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.TabActivity;
 
@@ -46,7 +47,6 @@ public class LoginActivity extends AppCompatActivity {
         createBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                //Intent intent = new Intent(this, CreateAccountActivity.class);
                 Intent intent = new Intent(LoginActivity.this, CreateAccountActivity.class);
                 startActivity(intent);
             }
@@ -62,15 +62,13 @@ public class LoginActivity extends AppCompatActivity {
             if(name.equals(accounts.get(i).getLogin()) && password.equals(accounts.get(i).getPassword())){
                 ok = true;
                 account = accounts.get(i);
-                //break;
             }
         }
 
         if(ok){
-            //warningTxt.setText("you have been logged in");
             nameTxt.setText("");
             passwordTxt.setText("");
-            //Intent intent = new Intent(LoginActivity.this, ShowListActivity.class);
+            FavouriteMapper.delete(this);
             Intent intent = new Intent(LoginActivity.this, TabActivity.class);
             intent.putExtra("accountId", account.getId());
             startActivity(intent);
@@ -80,14 +78,5 @@ public class LoginActivity extends AppCompatActivity {
             passwordTxt.setText("");
         }
 
-        /*if(nameTxt.getText().toString().equals("admin") && passwordTxt.getText().toString().equals("1234")) {
-            warningTxt.setText("you have been logged in");
-            nameTxt.setText("");
-            passwordTxt.setText("");
-        }else{
-            warningTxt.setText("wrong name or password");
-            nameTxt.setText("");
-            passwordTxt.setText("");
-        }*/
     }
 }
