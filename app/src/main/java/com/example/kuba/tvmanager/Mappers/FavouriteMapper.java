@@ -183,6 +183,64 @@ public class FavouriteMapper {
         return favourites;
     }
 
+    public static void deleteSpecific(Context ctx, String accountId, String showId){
+
+        try {
+            Document doc = getDocument(ctx);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+
+            boolean removeShow = false;
+            boolean removeAccount = false;
+            int previousPosition = 0;
+            NodeList favouriteList = doc.getElementsByTagName("favourite");
+            for(int i = 0; i < favouriteList.getLength(); i++){
+                NodeList childList = favouriteList.item(i).getChildNodes();
+
+                for(int j = 0; j < childList.getLength(); j++){
+                    Node node = childList.item(j);
+
+                    if(node.getNodeName().equals("showId")){
+                        if(node.getTextContent().equals(showId)){
+                            removeShow = true;
+                            previousPosition = j;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("accountId")){
+                        if(j - 1 == previousPosition && node.getTextContent().equals(accountId)){
+                            removeAccount = true;
+                        }else{
+                            previousPosition = 0;
+                            removeShow = false;
+                        }
+                    }
+                }
+
+                if(removeShow && removeAccount){
+                    element.removeChild(favouriteList.item(i));
+                    break;
+                }
+            }
+
+
+            DOMSource source = new DOMSource(doc);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+            Transformer transformer = transformerFactory.newTransformer();
+            StreamResult result = new StreamResult(ctx.openFileOutput("fav.xml", Context.MODE_PRIVATE));
+            transformer.transform(source, result);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public static void delete(Context ctx){
         File dir = ctx.getFilesDir();
         File file = new File(dir, "fav.xml");

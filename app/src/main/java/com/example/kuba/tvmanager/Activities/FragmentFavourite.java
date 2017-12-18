@@ -4,13 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,23 +30,24 @@ public class FragmentFavourite extends Fragment {
     private ArrayList<Favourite> newFavourites;
     private ArrayList<TVShow> shows;
     private ListView listView;
-    private Button buttonReaload;
+    private String accountId;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.tab_favourite_list, container, false);
-        buttonReaload = (Button)view.findViewById(R.id.buttonReload);
 
         listView = (ListView)view.findViewById(R.id.listWiev);
         shows = new ArrayList<>();
         newFavourites = new ArrayList<>();
         Bundle extra = getActivity().getIntent().getExtras();
         if(extra != null){
-            String value = extra.getString("accountId");
+            accountId = extra.getString("accountId");
             favourites = FavouriteMapper.getFavourites(getActivity().getApplicationContext());
+
+
             for(int i = 0; i < favourites.size(); i++){
-                if(value.equals(favourites.get(i).getAccountId().getId())){
+                if(accountId.equals(favourites.get(i).getAccountId().getId())){
                     newFavourites.add(favourites.get(i));
                 }
             }
@@ -60,10 +59,14 @@ public class FragmentFavourite extends Fragment {
 
         }
 
-        buttonReaload.setOnClickListener(new View.OnClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View v){
-                reload();
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TVShow show = shows.get(position);
+                Intent intent = new Intent(getActivity(), ShowDetailActivity.class);
+                intent.putExtra("showId", show.getId());
+                intent.putExtra("accountId", accountId);
+                startActivity(intent);
             }
         });
 
@@ -71,11 +74,6 @@ public class FragmentFavourite extends Fragment {
         listView.setAdapter(adapter);
 
         return view;
-    }
-
-    private void reload(){
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.detach(this).attach(this).commit();
     }
 
 

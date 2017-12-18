@@ -37,7 +37,6 @@ public class FragmentComplete extends Fragment {
         shows = TVShowMapper.getShows(getContext());
 
         listView = (ListView)view.findViewById(R.id.listWiev);
-        //ShowListActivity.CustomAdapter adapter = new getActivity().CustomAdapter();
         FragmentComplete.CustomAdapter adapter = new FragmentComplete.CustomAdapter();
         listView.setAdapter(adapter);
 
@@ -47,10 +46,6 @@ public class FragmentComplete extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*Intent intent = new Intent(ShowListActivity.this, ShowDetailActivity.class);
-                intent.putExtra("showId", id);
-                startActivity(intent);*/
-                //Toast.makeText(ShowListActivity.this, "You clicked on " + shows.get(position).getName(), Toast.LENGTH_SHORT).show();
                 TVShow show = shows.get(position);
                 Intent intent = new Intent(getActivity(), ShowDetailActivity.class);
                 intent.putExtra("showId", show.getId());

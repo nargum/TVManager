@@ -1,6 +1,7 @@
 package com.example.kuba.tvmanager.Activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +39,9 @@ public class ShowDetailActivity extends AppCompatActivity {
     private ArrayList<Episode> sEpisodes;
     private ArrayList<String> numberOfSeasons;
     private Button buttonAddFavourite;
+    private ArrayList<Favourite> favourites;
+    private String showId;
+    private String accountId;
 
 
     @Override
@@ -49,6 +53,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         episodes = EpisodeMapper.getEpisodes(this);
         sEpisodes = new ArrayList<>();
         numberOfSeasons = new ArrayList<>();
+        favourites = FavouriteMapper.getFavourites(this);
 
 
         seasonList = (ListView)findViewById(R.id.seasonList);
@@ -58,12 +63,28 @@ public class ShowDetailActivity extends AppCompatActivity {
         textScore = (TextView)findViewById(R.id.textScore);
         final Bundle extras = getIntent().getExtras();
         if(extras != null){
-            String value = extras.getString("showId");
-            show = TVShowMapper.selectShow(this, Integer.valueOf(value));
+            showId = extras.getString("showId");
+            accountId = extras.getString("accountId");
+
+            for(int i = 0; i < favourites.size(); i++){
+                if(favourites.get(i).getShowId().getId().equals(showId) && favourites.get(i).getAccountId().getId().equals(accountId)){
+                    buttonAddFavourite.setText("Remove from favourites");
+                    buttonAddFavourite.setBackgroundColor(Color.RED);
+                    break;
+                }
+
+                if(i == favourites.size() - 1){
+                    buttonAddFavourite.setText("Add to favourites");
+                    buttonAddFavourite.setBackgroundColor(Color.GREEN);
+                }
+            }
+
+            show = TVShowMapper.selectShow(this, Integer.valueOf(showId));
             for(int i = 0; i < episodes.size(); i++){
-                if(episodes.get(i).getShowId().getId().equals(value)){
+                if(episodes.get(i).getShowId().getId().equals(showId)){
                     sEpisodes.add(episodes.get(i));
                 }
+
             }
         }
 
@@ -86,7 +107,11 @@ public class ShowDetailActivity extends AppCompatActivity {
         buttonAddFavourite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                makeIt();
+                if(buttonAddFavourite.getText().equals("Add to favourites")){
+                    addFavourites();
+                } else{
+                    removeFavourites();
+                }
 
             }
         });
@@ -98,7 +123,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         Toast.makeText(this, String.valueOf(episodes.size()), Toast.LENGTH_SHORT).show();
     }
 
-    public void makeIt(){
+    public void addFavourites(){
 
         Bundle extra = getIntent().getExtras();
         String accountId = extra.getString("accountId");
@@ -108,10 +133,17 @@ public class ShowDetailActivity extends AppCompatActivity {
         TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
         FavouriteMapper.add(this, account, show);
 
-
+        buttonAddFavourite.setText("Remove from favourites");
+        buttonAddFavourite.setBackgroundColor(Color.RED);
         Toast.makeText(ShowDetailActivity.this, "added" , Toast.LENGTH_SHORT).show();
 
 
+    }
+
+    public void removeFavourites(){
+        FavouriteMapper.deleteSpecific(this, accountId, showId);
+        buttonAddFavourite.setBackgroundColor(Color.GREEN);
+        buttonAddFavourite.setText("Add to favourites");
     }
 
     class CustomAdapter2 extends BaseAdapter{
