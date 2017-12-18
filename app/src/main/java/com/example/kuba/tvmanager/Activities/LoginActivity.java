@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
+import com.example.kuba.tvmanager.Mappers.ScoreMapper;
+import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.TabActivity;
 
@@ -69,6 +71,8 @@ public class LoginActivity extends AppCompatActivity {
             nameTxt.setText("");
             passwordTxt.setText("");
             //FavouriteMapper.delete(this);
+            //ScoreMapper.delete(this);
+            //TVShowMapper.delete(this);
             Intent intent = new Intent(LoginActivity.this, TabActivity.class);
             intent.putExtra("accountId", account.getId());
             startActivity(intent);

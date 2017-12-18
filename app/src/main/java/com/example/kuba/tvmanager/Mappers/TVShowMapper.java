@@ -24,6 +24,12 @@ import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * Created by Kuba on 12/13/2017.
@@ -218,5 +224,63 @@ public class TVShowMapper {
         }
 
         return show;
+    }
+
+    public static void update(Context ctx, String showId, int score){
+        try {
+            Document doc = getDocument(ctx);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+            String myId = String.valueOf(showId);
+            boolean updateRecord = false;
+
+            NodeList accountList = doc.getElementsByTagName("TVShow");
+            for(int i = 0; i < accountList.getLength(); i++) {
+                NodeList childList = accountList.item(i).getChildNodes();
+                for (int j = 0; j < childList.getLength(); j++) {
+
+                    Node node = childList.item(j);
+                    switch (node.getNodeName()) {
+                        case "id":
+                            if (myId.equals(String.valueOf(node.getTextContent()))) {
+                                updateRecord = true;
+                            }
+                            break;
+                        case "score":
+                            if (updateRecord) {
+                                node.setTextContent(String.valueOf(score));
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+
+                }
+
+                if(updateRecord){
+                    break;
+                }
+            }
+
+
+            DOMSource source = new DOMSource(doc);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+            Transformer transformer = transformerFactory.newTransformer();
+            StreamResult result = new StreamResult(ctx.openFileOutput("shows.xml", Context.MODE_PRIVATE));
+            transformer.transform(source, result);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void delete(Context ctx){
+        File dir = ctx.getFilesDir();
+        File file = new File(dir, "shows.xml");
+        file.delete();
     }
 }

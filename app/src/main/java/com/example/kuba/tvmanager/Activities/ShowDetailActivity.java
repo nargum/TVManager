@@ -2,6 +2,8 @@ package com.example.kuba.tvmanager.Activities;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,8 +24,10 @@ import com.example.kuba.tvmanager.Favourite;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
 import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
+import com.example.kuba.tvmanager.Mappers.ScoreMapper;
 import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.R;
+import com.example.kuba.tvmanager.Score;
 import com.example.kuba.tvmanager.TVShow;
 import com.example.kuba.tvmanager.TabActivity;
 
@@ -39,9 +44,21 @@ public class ShowDetailActivity extends AppCompatActivity {
     private ArrayList<Episode> sEpisodes;
     private ArrayList<String> numberOfSeasons;
     private Button buttonAddFavourite;
+    private Button buttonInsert;
+    private EditText textYourScore;
     private ArrayList<Favourite> favourites;
+    private ArrayList<Score> scoreList;
     private String showId;
     private String accountId;
+    private int currentScore;
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            buttonAddFavourite.setText("Remove from favourites");
+            buttonAddFavourite.setBackgroundColor(Color.RED);
+            Toast.makeText(ShowDetailActivity.this, "added" , Toast.LENGTH_SHORT).show();
+        }
+    };
 
 
     @Override
@@ -49,11 +66,18 @@ public class ShowDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_detail);
 
+        buttonInsert = (Button)findViewById(R.id.buttonInsert);
+        textYourScore = (EditText)findViewById(R.id.textYourScore);
         buttonAddFavourite = (Button)findViewById(R.id.buttonAddFavourite);
         episodes = EpisodeMapper.getEpisodes(this);
         sEpisodes = new ArrayList<>();
         numberOfSeasons = new ArrayList<>();
+        favourites = null;
         favourites = FavouriteMapper.getFavourites(this);
+        scoreList = ScoreMapper.getScores(this);
+        currentScore = 0;
+
+
 
 
         seasonList = (ListView)findViewById(R.id.seasonList);
@@ -65,6 +89,11 @@ public class ShowDetailActivity extends AppCompatActivity {
         if(extras != null){
             showId = extras.getString("showId");
             accountId = extras.getString("accountId");
+
+            if(favourites.size() == 0){
+                buttonAddFavourite.setText("Add to favourites");
+                buttonAddFavourite.setBackgroundColor(Color.GREEN);
+            }
 
             for(int i = 0; i < favourites.size(); i++){
                 if(favourites.get(i).getShowId().getId().equals(showId) && favourites.get(i).getAccountId().getId().equals(accountId)){
@@ -116,6 +145,14 @@ public class ShowDetailActivity extends AppCompatActivity {
             }
         });
 
+        buttonInsert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                addScore();
+
+            }
+        });
+
 
 
         textMessage.setText(show.getName());
@@ -123,19 +160,52 @@ public class ShowDetailActivity extends AppCompatActivity {
         Toast.makeText(this, String.valueOf(episodes.size()), Toast.LENGTH_SHORT).show();
     }
 
-    public void addFavourites(){
-
+    public void addScore(){
         Bundle extra = getIntent().getExtras();
         String accountId = extra.getString("accountId");
         String showId = extra.getString("showId");
 
         Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
         TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
-        FavouriteMapper.add(this, account, show);
 
-        buttonAddFavourite.setText("Remove from favourites");
-        buttonAddFavourite.setBackgroundColor(Color.RED);
-        Toast.makeText(ShowDetailActivity.this, "added" , Toast.LENGTH_SHORT).show();
+        if(textYourScore.equals("")){
+            Toast.makeText(this, "Insert your score pleas.", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            ScoreMapper.add(this, account, show, Integer.parseInt(textYourScore.getText().toString()));
+            scoreList = ScoreMapper.getScores(this);
+            int controlSum = 0;
+            for(int i = 0; i < scoreList.size(); i++){
+                controlSum += scoreList.get(i).getScore();
+            }
+
+            textScore.setText(String.valueOf(controlSum / scoreList.size()));
+            TVShowMapper.update(this, showId, controlSum / scoreList.size());
+            textYourScore.setText("");
+            buttonInsert.setText("Update score");
+        }
+    }
+
+    public void addFavourites(){
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                Bundle extra = getIntent().getExtras();
+                String accountId = extra.getString("accountId");
+                String showId = extra.getString("showId");
+
+                Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
+                TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
+                FavouriteMapper.add(getApplicationContext(), account, show);
+
+                handler.sendEmptyMessage(0);
+            }
+        };
+
+        Thread thread2 = new Thread(r);
+        thread2.start();
+
+
 
 
     }

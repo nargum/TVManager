@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Favourite;
+import com.example.kuba.tvmanager.Score;
 import com.example.kuba.tvmanager.TVShow;
 
 import org.w3c.dom.Document;
@@ -20,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -34,23 +34,22 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 /**
- * Created by Kuba on 12/16/2017.
+ * Created by Kuba on 12/18/2017.
  */
 
-public class FavouriteMapper {
-
+public class ScoreMapper {
     public static void createDocument(Context ctx){
         FileOutputStream fos;
 
         try {
-            fos = ctx.openFileOutput("fav.xml", Context.MODE_APPEND);
+            fos = ctx.openFileOutput("score.xml", Context.MODE_APPEND);
 
             XmlSerializer serializer = Xml.newSerializer();
             serializer.setOutput(fos, "UTF-8");
             serializer.startDocument(null, Boolean.valueOf(true));
             serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
-            serializer.startTag(null, "favourites");
-            serializer.endTag(null, "favourites");
+            serializer.startTag(null, "scoreList");
+            serializer.endTag(null, "scoreList");
 
             /*serializer.startTag(null, "favourite");
             serializer.startTag(null, "showId");
@@ -75,18 +74,18 @@ public class FavouriteMapper {
     }
 
     private static Document getDocument(Context ctx){
-        File xml = new File(ctx.getFilesDir() + "/fav.xml");
+        File xml = new File(ctx.getFilesDir() + "/score.xml");
 
         if(!xml.exists()){
             createDocument(ctx);
         }
         Document d = null;
         try {
-            FileInputStream is = ctx.openFileInput("fav.xml");
+            FileInputStream is = ctx.openFileInput("score.xml");
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             d = builder.parse(is);
-           // is.close();
+            // is.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
@@ -99,20 +98,23 @@ public class FavouriteMapper {
         return d;
     }
 
-    public static void add(Context ctx, Account account, TVShow show){
+    public static void add(Context ctx, Account account, TVShow show, int score){
 
         Document xmlDoc = getDocument(ctx);
         Element favourites = xmlDoc.getDocumentElement();
-        Element newFavourite = xmlDoc.createElement("favourite");
+        Element newFavourite = xmlDoc.createElement("scoreRecord");
 
         Element showId = xmlDoc.createElement("showId");
         Element accountId = xmlDoc.createElement("accountId");
+        Element scoreEle = xmlDoc.createElement("score");
 
         showId.appendChild(xmlDoc.createTextNode(show.getId()));
         accountId.appendChild(xmlDoc.createTextNode(account.getId()));
+        scoreEle.appendChild(xmlDoc.createTextNode(String.valueOf(score)));
 
         newFavourite.appendChild(showId);
         newFavourite.appendChild(accountId);
+        newFavourite.appendChild(scoreEle);
 
         favourites.appendChild(newFavourite);
 
@@ -120,7 +122,7 @@ public class FavouriteMapper {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         try {
             Transformer transformer = transformerFactory.newTransformer();
-            StreamResult result = new StreamResult(ctx.openFileOutput("fav.xml", Context.MODE_PRIVATE));
+            StreamResult result = new StreamResult(ctx.openFileOutput("score.xml", Context.MODE_PRIVATE));
             transformer.transform(source, result);
         } catch (TransformerConfigurationException e) {
             Toast.makeText(ctx, "chyba v add favourites", Toast.LENGTH_SHORT).show();
@@ -131,26 +133,26 @@ public class FavouriteMapper {
         }
     }
 
-    public static ArrayList<Favourite> getFavourites(Context ctx){
-        File xml = new File(ctx.getFilesDir() + "/fav.xml");
+    public static ArrayList<Score> getScores(Context ctx){
+        File xml = new File(ctx.getFilesDir() + "/score.xml");
 
         if(!xml.exists()){
             createDocument(ctx);
         }
-        ArrayList<Favourite> favourites = new ArrayList<>();
+        ArrayList<Score> favourites = new ArrayList<>();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
-            FileInputStream is = ctx.openFileInput("fav.xml");
+            FileInputStream is = ctx.openFileInput("score.xml");
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(is);
             Element element = doc.getDocumentElement();
             element.normalize();
 
 
-            NodeList favouriteList = doc.getElementsByTagName("favourite");
+            NodeList favouriteList = doc.getElementsByTagName("scoreRecord");
             for(int i = 0; i < favouriteList.getLength(); i++) {
                 NodeList childList = favouriteList.item(i).getChildNodes();
-                Favourite favourite  = new Favourite();
+                Score favourite  = new Score();
                 for (int j = 0; j < childList.getLength(); j++) {
 
                     Node node = childList.item(j);
@@ -162,6 +164,9 @@ public class FavouriteMapper {
                         case "accountId":
                             Account account = AccountMapper.selectAccount(ctx, Integer.parseInt(node.getTextContent()));
                             favourite.setAccountId(account);
+                            break;
+                        case "score":
+                            favourite.setScore(Integer.parseInt(node.getTextContent()));
                             break;
                         default:
                             continue;
@@ -184,7 +189,13 @@ public class FavouriteMapper {
         return favourites;
     }
 
-    public static void deleteSpecific(Context ctx, String accountId, String showId){
+    public static void delete(Context ctx){
+        File dir = ctx.getFilesDir();
+        File file = new File(dir, "score.xml");
+        file.delete();
+    }
+
+    /*public static void deleteSpecific(Context ctx, String accountId, String showId){
 
         try {
             Document doc = getDocument(ctx);
@@ -240,11 +251,5 @@ public class FavouriteMapper {
             e.printStackTrace();
         }
 
-    }
-
-    public static void delete(Context ctx){
-        File dir = ctx.getFilesDir();
-        File file = new File(dir, "fav.xml");
-        file.delete();
-    }
+    }*/
 }
