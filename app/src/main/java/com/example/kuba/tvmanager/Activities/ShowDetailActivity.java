@@ -9,9 +9,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Episode;
+import com.example.kuba.tvmanager.EpisodeListActivity;
 import com.example.kuba.tvmanager.Favourite;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
@@ -173,6 +176,22 @@ public class ShowDetailActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        seasonList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Bundle extra = getIntent().getExtras();
+                String accountId = extra.getString("accountId");
+                String showId = extra.getString("showId");
+                Intent intent = new Intent(ShowDetailActivity.this, EpisodeListActivity.class);
+                intent.putExtra("accountId", accountId);
+                intent.putExtra("showId", showId);
+                intent.putExtra("season", numberOfSeasons.get(position));
+                startActivity(intent);
+            }
+        });
+
+
 
         //setYourScore();
         initialSet();
@@ -376,9 +395,13 @@ public class ShowDetailActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.custom_season, null);
             //TextView textViewName = (TextView)convertView.findViewById(R.id.textViewName);
-            CheckBox seasonCheck = (CheckBox)convertView.findViewById(R.id.boxSeason);
+            final CheckedTextView seasonCheck = (CheckedTextView) convertView.findViewById(R.id.simpleCheckedTextView);
             //seasonCheck.setText(episodes.get(position).getName());
+            //seasonCheck.setCheckMarkDrawable(0);
             seasonCheck.setText("Season " + numberOfSeasons.get(position));
+            seasonCheck.setCheckMarkDrawable(null);
+
+
             return convertView;
         }
     }

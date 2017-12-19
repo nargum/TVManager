@@ -51,17 +51,6 @@ public class ScoreMapper {
             serializer.startTag(null, "scoreList");
             serializer.endTag(null, "scoreList");
 
-
-            /*serializer.startTag(null, "favourite");
-            serializer.startTag(null, "showId");
-            serializer.text("3");
-            serializer.endTag(null, "showId");
-
-            serializer.startTag(null, "accountId");
-            serializer.text("0");
-            serializer.endTag(null, "accountId");
-            //serializer.endTag(null, "favourite");*/
-
             serializer.endDocument();
 
             serializer.flush();

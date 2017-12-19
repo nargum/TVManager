@@ -23,7 +23,8 @@
             android:name=".TabActivity"
             android:label="@string/title_activity_tab"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ScoreTable"></activity>
+        <activity android:name=".ScoreTable" />
+        <activity android:name=".EpisodeListActivity"></activity>
     </application>
 
 </manifest>

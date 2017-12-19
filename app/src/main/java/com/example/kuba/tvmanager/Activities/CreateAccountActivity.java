@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.R;
-import com.example.kuba.tvmanager.learnXml;
+
 
 import java.util.ArrayList;
 
@@ -66,7 +66,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         delBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                learnXml.delete(getApplicationContext());
+                AccountMapper.delete(getApplicationContext());
 
             }
         });

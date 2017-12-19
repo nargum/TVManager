@@ -2,7 +2,9 @@ package com.example.kuba.tvmanager.Mappers;
 
 import android.content.Context;
 import android.util.Xml;
+import android.widget.Toast;
 
+import com.example.kuba.tvmanager.Account;
 import com.example.kuba.tvmanager.Episode;
 import com.example.kuba.tvmanager.TVShow;
 
@@ -190,6 +192,80 @@ public class EpisodeMapper {
             e.printStackTrace();
         }
         return episodes;
+    }
+
+    public static Episode selectEpisode(Context ctx, int episodeId){
+        File xml = new File(ctx.getFilesDir() + "/episodes.xml");
+
+        if(!xml.exists()){
+            createDocument(ctx);
+        }
+
+        Episode show = new Episode();
+        String myId = String.valueOf(episodeId);
+        boolean passInformation = false;
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            FileInputStream is = ctx.openFileInput("episodes.xml");
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(is);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+            NodeList accountList = doc.getElementsByTagName("episode");
+            for(int i = 0; i < accountList.getLength(); i++) {
+                NodeList childList = accountList.item(i).getChildNodes();
+                for (int j = 0; j < childList.getLength(); j++) {
+
+                    Node node = childList.item(j);
+                    switch(node.getNodeName()){
+                        case "id":
+                            if(myId.equals(String.valueOf(node.getTextContent()))){
+                                show.setId(node.getTextContent());
+                                passInformation = true;
+                            }
+                            break;
+                        case "name":
+                            if(passInformation){
+                                show.setName(node.getTextContent());
+                            }
+                            break;
+                        case "season":
+                            if(passInformation){
+                                show.setSeason(node.getTextContent());
+                            }
+                            break;
+                        case "episodeNumber":
+                            if(passInformation){
+                                show.setEpisodeNumber(node.getTextContent());
+                            }
+                            break;
+                        case "showId":
+                            if(passInformation){
+                                TVShow myShow = TVShowMapper.selectShow(ctx, Integer.parseInt(node.getTextContent()));
+                                show.setShowId(myShow);
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+
+                }
+                if(passInformation)
+                    break;
+            }
+        } catch (ParserConfigurationException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (FileNotFoundException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (SAXException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(ctx, "chyba v select account", Toast.LENGTH_SHORT).show();
+        }
+
+        return show;
     }
 
 
