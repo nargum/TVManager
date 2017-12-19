@@ -51,6 +51,7 @@ public class ScoreMapper {
             serializer.startTag(null, "scoreList");
             serializer.endTag(null, "scoreList");
 
+
             /*serializer.startTag(null, "favourite");
             serializer.startTag(null, "showId");
             serializer.text("3");
@@ -98,7 +99,7 @@ public class ScoreMapper {
         return d;
     }
 
-    public static void add(Context ctx, Account account, TVShow show, int score){
+    public static void add(Context ctx, Score score){
 
         Document xmlDoc = getDocument(ctx);
         Element favourites = xmlDoc.getDocumentElement();
@@ -108,9 +109,9 @@ public class ScoreMapper {
         Element accountId = xmlDoc.createElement("accountId");
         Element scoreEle = xmlDoc.createElement("score");
 
-        showId.appendChild(xmlDoc.createTextNode(show.getId()));
-        accountId.appendChild(xmlDoc.createTextNode(account.getId()));
-        scoreEle.appendChild(xmlDoc.createTextNode(String.valueOf(score)));
+        showId.appendChild(xmlDoc.createTextNode(score.getShowId().getId()));
+        accountId.appendChild(xmlDoc.createTextNode(score.getAccountId().getId()));
+        scoreEle.appendChild(xmlDoc.createTextNode(String.valueOf(score.getScore())));
 
         newFavourite.appendChild(showId);
         newFavourite.appendChild(accountId);
@@ -193,6 +194,160 @@ public class ScoreMapper {
         File dir = ctx.getFilesDir();
         File file = new File(dir, "score.xml");
         file.delete();
+    }
+
+    //funkcni
+    public static void update(Context ctx, Score score){
+        try {
+            Document doc = getDocument(ctx);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+
+            //boolean removeShow = false;
+            //boolean removeAccount = false;
+            int previousPosition = 0;
+            int previousAccountPosition = 0;
+            NodeList favouriteList = doc.getElementsByTagName("scoreRecord");
+            for(int i = 0; i < favouriteList.getLength(); i++){
+                NodeList childList = favouriteList.item(i).getChildNodes();
+
+                for(int j = 0; j < childList.getLength(); j++){
+                    Node node = childList.item(j);
+
+                    if(node.getNodeName().equals("showId")){
+                        if(node.getTextContent().equals(score.getShowId().getId())){
+                            //removeShow = true;
+                            previousPosition = j;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("accountId")){
+                        if(j - 1 == previousPosition && node.getTextContent().equals(score.getAccountId().getId())){
+                            //removeAccount = true;
+                            previousAccountPosition = j;
+                        }else{
+                            previousPosition = 0;
+                            //removeShow = false;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("score")){
+                        /*if(j - 1 == previousAccountPosition && j - 2 == previousPosition){
+                            node.setTextContent(String.valueOf(score.getScore()));
+                        }
+                        else{
+                            previousAccountPosition = 0;
+                            previousPosition = 0;
+                        }*/
+
+                        if(childList.item(j - 2).getTextContent().equals(score.getShowId().getId()) && childList.item(j - 1).getTextContent().equals(score.getAccountId().getId())){
+                            node.setTextContent(String.valueOf(score.getScore()));
+                        }
+                    }
+                }
+
+                /*if(removeShow && removeAccount){
+                    element.removeChild(favouriteList.item(i));
+                    break;
+                }*/
+            }
+
+
+            DOMSource source = new DOMSource(doc);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+            Transformer transformer = transformerFactory.newTransformer();
+            StreamResult result = new StreamResult(ctx.openFileOutput("score.xml", Context.MODE_PRIVATE));
+            transformer.transform(source, result);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //nefunkcni
+    public static Score selectSpecific(Context ctx, String accountId, String showId){
+        File xml = new File(ctx.getFilesDir() + "/score.xml");
+
+        if(!xml.exists()){
+            createDocument(ctx);
+        }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        Score score = null;
+
+        try {
+            FileInputStream is = ctx.openFileInput("score.xml");
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(is);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+
+
+            boolean removeShow = false;
+            boolean removeAccount = false;
+            int showPosition = 0;
+            int accountPosition = 0;
+            //int previousAccountPosition = 0;
+            NodeList favouriteList = doc.getElementsByTagName("scoreRecord");
+            for(int i = 0; i < favouriteList.getLength(); i++){
+                NodeList childList = favouriteList.item(i).getChildNodes();
+
+                for(int j = 0; j < childList.getLength(); j++){
+                    Node node = childList.item(j);
+
+                    if(node.getNodeName().equals("showId")){
+                        if(node.getTextContent().equals(showId)){
+                            removeShow = true;
+                            showPosition = j;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("accountId")){
+                        if(j - 1 == showPosition && node.getTextContent().equals(accountId)){
+                            removeAccount = true;
+                            accountPosition = j;
+                           // previousAccountPosition = j;
+                        }else{
+                            showPosition = 0;
+                            removeAccount = false;
+                            removeShow = false;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("score")){
+                        if(removeShow && removeAccount && j - 2 == showPosition && j - 1 == accountPosition){
+                            score = new Score();
+                            score.setAccountId(AccountMapper.selectAccount(ctx, Integer.parseInt(accountId)));
+                            score.setShowId(TVShowMapper.selectShow(ctx, Integer.parseInt(showId)));
+                            score.setScore(Integer.parseInt(node.getTextContent().toString()));
+                        }else{
+                            showPosition = 0;
+                            accountPosition = 0;
+                            removeAccount = false;
+                            removeShow = false;
+                        }
+                    }
+                }
+
+            }
+
+            is.close();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return score;
     }
 
     /*public static void deleteSpecific(Context ctx, String accountId, String showId){

@@ -4,12 +4,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -28,18 +27,17 @@ import com.example.kuba.tvmanager.Mappers.ScoreMapper;
 import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.Score;
+import com.example.kuba.tvmanager.ScoreTable;
 import com.example.kuba.tvmanager.TVShow;
-import com.example.kuba.tvmanager.TabActivity;
 
 import java.util.ArrayList;
-
-import static java.security.AccessController.getContext;
 
 public class ShowDetailActivity extends AppCompatActivity {
     private TextView textMessage;
     private TextView textScore;
     private TVShow show;
     private ListView seasonList;
+    private TextView textScoreYour;
     private ArrayList<Episode> episodes;
     private ArrayList<Episode> sEpisodes;
     private ArrayList<String> numberOfSeasons;
@@ -51,6 +49,7 @@ public class ShowDetailActivity extends AppCompatActivity {
     private String showId;
     private String accountId;
     private int currentScore;
+    private Button buttonCheck;
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg){
@@ -60,12 +59,25 @@ public class ShowDetailActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onRestart() {
+
+        // TODO Auto-generated method stub
+        super.onRestart();
+        Intent i = new Intent(ShowDetailActivity.this, ShowDetailActivity.class);  //your class
+        startActivity(i);
+        finish();
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_detail);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
+        textScoreYour = (TextView)findViewById(R.id.textScoreYour);
         buttonInsert = (Button)findViewById(R.id.buttonInsert);
         textYourScore = (EditText)findViewById(R.id.textYourScore);
         buttonAddFavourite = (Button)findViewById(R.id.buttonAddFavourite);
@@ -76,7 +88,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         favourites = FavouriteMapper.getFavourites(this);
         scoreList = ScoreMapper.getScores(this);
         currentScore = 0;
-
+        buttonCheck = (Button)findViewById(R.id.buttonCheck);
 
 
 
@@ -84,7 +96,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         CustomAdapter2 adapter = new CustomAdapter2();
         seasonList.setAdapter(adapter);
         textMessage = (TextView)findViewById(R.id.textMessage);
-        textScore = (TextView)findViewById(R.id.textScore);
+        textScore = (TextView)findViewById(R.id.textScore2);
         final Bundle extras = getIntent().getExtras();
         if(extras != null){
             showId = extras.getString("showId");
@@ -148,16 +160,105 @@ public class ShowDetailActivity extends AppCompatActivity {
         buttonInsert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
+                //addScore();
                 addScore();
-
             }
         });
 
+        buttonCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                //addScore();
+                Intent intent = new Intent(ShowDetailActivity.this, ScoreTable.class);
+                startActivity(intent);
+            }
+        });
 
+        //setYourScore();
+        initialSet();
 
         textMessage.setText(show.getName());
+    }
+
+    private void initialSet(){
+        Bundle extra = getIntent().getExtras();
+        String accountId = extra.getString("accountId");
+        String showId = extra.getString("showId");
+        TVShow show = TVShowMapper.selectShow(this, Integer.parseInt(showId));
+        Account account = AccountMapper.selectAccount(this, Integer.parseInt(accountId));
+        ArrayList<Score> scoreList = ScoreMapper.getScores(this);
+        Score score = null;
+        for(int i = 0; i < scoreList.size(); i++){
+            if(scoreList.get(i).getShowId().getId().equals(showId) && scoreList.get(i).getAccountId().getId().equals(accountId)){
+                score = scoreList.get(i);
+                break;
+            }
+        }
+
         textScore.setText(String.valueOf(show.getScore()));
-        Toast.makeText(this, String.valueOf(episodes.size()), Toast.LENGTH_SHORT).show();
+        if(score == null){
+            textScoreYour.setText("0");
+        }else{
+            textScoreYour.setText(String.valueOf(score.getScore()));
+            Toast.makeText(this, score.info(), Toast.LENGTH_SHORT).show();
+        }
+
+        if(textScoreYour.getText().equals("0"))
+            buttonInsert.setText("insert score");
+        else
+            buttonInsert.setText("update score");
+    }
+
+    private void addScore(){
+        Bundle extra = getIntent().getExtras();
+        String accountId = extra.getString("accountId");
+        String showId = extra.getString("showId");
+        Account account = AccountMapper.selectAccount(this, Integer.parseInt(accountId));
+        TVShow show = TVShowMapper.selectShow(this, Integer.parseInt(showId));
+
+        Score score = new Score(show, account, Integer.parseInt(textYourScore.getText().toString()));
+        if(buttonInsert.getText().equals("insert score"))
+            ScoreMapper.add(this, score);
+        else
+            ScoreMapper.update(this, score);
+        textYourScore.setText("");
+        textScoreYour.setText(String.valueOf(score.getScore()));
+        int totalScore = 0;
+        ArrayList<Score> scoreList = ScoreMapper.getScores(this);
+        ArrayList<Score> newList = new ArrayList<>();
+        for(int i = 0; i < scoreList.size(); i++){
+            if(scoreList.get(i).getShowId().getId().equals(showId)){
+                newList.add(scoreList.get(i));
+            }
+        }
+
+        for(int i = 0; i < newList.size(); i++){
+            totalScore += newList.get(i).getScore();
+        }
+
+
+        TVShowMapper.update(this, showId, totalScore / newList.size());
+        textScore.setText(String.valueOf(totalScore / newList.size()));
+        buttonInsert.setText("update score");
+    }
+
+    /*private void setYourScore(){
+        Bundle extra = getIntent().getExtras();
+        String accountId = extra.getString("accountId");
+        String showId = extra.getString("showId");
+
+        Score myScore = ScoreMapper.selectSpecific(this, accountId, showId);
+
+
+
+        if(myScore.getScore() == 0){
+            buttonInsert.setText("insert score");
+        }else{
+            buttonInsert.setText("update score");
+            Toast.makeText(this, String.valueOf(myScore.getAccountId().getId()) + " " + String.valueOf(myScore.getShowId().getId()) + " " + String.valueOf(myScore.getScore()), Toast.LENGTH_SHORT).show();
+
+        }
+        textScoreYour.setText(String.valueOf(myScore.getScore()));
     }
 
     public void addScore(){
@@ -165,26 +266,61 @@ public class ShowDetailActivity extends AppCompatActivity {
         String accountId = extra.getString("accountId");
         String showId = extra.getString("showId");
 
+
         Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.valueOf(accountId));
         TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.valueOf(showId));
 
-        if(textYourScore.equals("")){
-            Toast.makeText(this, "Insert your score pleas.", Toast.LENGTH_SHORT).show();
+
+        if(buttonInsert.getText().equals("insert score")){
+            if(textYourScore.equals("")){
+                Toast.makeText(this, "Insert your score pleas.", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                ScoreMapper.add(this, account, show, Integer.parseInt(textYourScore.getText().toString()));
+                scoreList = ScoreMapper.getScores(this);
+                ArrayList<Score> list = new ArrayList<>();
+                int controlSum = 0;
+                for(int i = 0; i < scoreList.size(); i++){
+                    if(scoreList.get(i).getShowId().getId().equals(showId)){
+                        list.add(scoreList.get(i));
+                    }
+                }
+
+                for(int i = 0; i < list.size(); i++){
+                    controlSum += list.get(i).getScore();
+                }
+
+                textScore.setText(String.valueOf(controlSum / list.size()));
+                TVShowMapper.update(this, showId, controlSum / list.size());
+                textYourScore.setText("");
+                setYourScore();
+                buttonInsert.setText("Update score");
+            }
         }
         else{
-            ScoreMapper.add(this, account, show, Integer.parseInt(textYourScore.getText().toString()));
+            //ScoreMapper.update(this, account, show, Integer.parseInt(textYourScore.getText().toString()));
+            ScoreMapper.update(this, accountId, showId, Integer.parseInt(textYourScore.getText().toString()));
             scoreList = ScoreMapper.getScores(this);
-            int controlSum = 0;
+            ArrayList<Score> list = new ArrayList<>();
             for(int i = 0; i < scoreList.size(); i++){
-                controlSum += scoreList.get(i).getScore();
+                if(scoreList.get(i).getShowId().getId().equals(showId)){
+                    list.add(scoreList.get(i));
+                }
+            }
+            int controlSum = 0;
+            for(int i = 0; i < list.size(); i++){
+                controlSum += list.get(i).getScore();
             }
 
-            textScore.setText(String.valueOf(controlSum / scoreList.size()));
-            TVShowMapper.update(this, showId, controlSum / scoreList.size());
+            textScore.setText(String.valueOf(controlSum / list.size()));
+            TVShowMapper.update(this, showId, controlSum / list.size());
             textYourScore.setText("");
-            buttonInsert.setText("Update score");
+            textScoreYour.setText(String.valueOf(ScoreMapper.selectSpecific(this, accountId, showId).getScore()));
+            setYourScore();
+            //buttonInsert.setText("Update score");
         }
-    }
+
+    }*/
 
     public void addFavourites(){
         Runnable r = new Runnable() {
