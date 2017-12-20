@@ -34,6 +34,7 @@ import com.example.kuba.tvmanager.ScoreTable;
 import com.example.kuba.tvmanager.TVShow;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class ShowDetailActivity extends AppCompatActivity {
     private TextView textMessage;
@@ -187,7 +188,23 @@ public class ShowDetailActivity extends AppCompatActivity {
                 intent.putExtra("accountId", accountId);
                 intent.putExtra("showId", showId);
                 intent.putExtra("season", numberOfSeasons.get(position));
+
+                ArrayList<Episode> episodes = EpisodeMapper.getEpisodes(getApplicationContext());
+                Iterator<Episode> iterator = episodes.iterator();
+                while(iterator.hasNext()){
+                    Episode e = iterator.next();
+                    if(!(e.getShowId().getId().equals(showId) && e.getSeason().equals(numberOfSeasons.get(position)))){
+                        iterator.remove();
+                    }
+                }
+
+                for(int i = 0; i < episodes.size(); i++){
+                    intent.putExtra(episodes.get(i).getEpisodeNumber() + ". " + episodes.get(i).getName(), episodes.get(i).getId());
+                }
+
+                intent.putExtra("episodeCount", episodes.size());
                 startActivity(intent);
+                finish();
             }
         });
 

@@ -174,4 +174,62 @@ public class WatchedMapper {
         }
         return favourites;
     }
+
+    public static void deleteSpecific(Context ctx, Account accountId, Episode episodeId){
+
+        try {
+            Document doc = getDocument(ctx);
+            Element element = doc.getDocumentElement();
+            element.normalize();
+
+
+            boolean removeShow = false;
+            boolean removeAccount = false;
+            int previousPosition = 0;
+            NodeList favouriteList = doc.getElementsByTagName("watched");
+            for(int i = 0; i < favouriteList.getLength(); i++){
+                NodeList childList = favouriteList.item(i).getChildNodes();
+
+                for(int j = 0; j < childList.getLength(); j++){
+                    Node node = childList.item(j);
+
+                    if(node.getNodeName().equals("accountId")){
+                        if(node.getTextContent().equals(accountId.getId())){
+                            removeShow = true;
+                            previousPosition = j;
+                        }
+                    }
+
+                    if(node.getNodeName().equals("episodeId")){
+                        if(j - 1 == previousPosition && node.getTextContent().equals(episodeId.getId())){
+                            removeAccount = true;
+                        }else{
+                            previousPosition = 0;
+                            removeShow = false;
+                        }
+                    }
+                }
+
+                if(removeShow && removeAccount){
+                    element.removeChild(favouriteList.item(i));
+                    break;
+                }
+            }
+
+
+            DOMSource source = new DOMSource(doc);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+            Transformer transformer = transformerFactory.newTransformer();
+            StreamResult result = new StreamResult(ctx.openFileOutput("watched.xml", Context.MODE_PRIVATE));
+            transformer.transform(source, result);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

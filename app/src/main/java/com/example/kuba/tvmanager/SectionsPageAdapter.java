@@ -26,13 +26,6 @@ public class SectionsPageAdapter extends FragmentPagerAdapter {
         mFragmentTitleList.add(fragmentTitle);
     }
 
-    public void replace(Fragment fragment, String fragmentTitle, int position){
-        mFragmentList.remove(position);
-        mFragmentTitleList.remove(position);
-        mFragmentList.add(position, fragment);
-        mFragmentTitleList.add(fragmentTitle);
-    }
-
     @Override
     public CharSequence getPageTitle(int position){
         return mFragmentTitleList.get(position);

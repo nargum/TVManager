@@ -23,7 +23,7 @@ public class Watched {
         this.accountId = accountId;
     }
 
-    public Episode episodeId(){
+    public Episode getEpisodeId(){
         return episodeId;
     }
 
