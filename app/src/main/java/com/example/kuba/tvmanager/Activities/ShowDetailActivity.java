@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,10 +29,12 @@ import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
 import com.example.kuba.tvmanager.Mappers.FavouriteMapper;
 import com.example.kuba.tvmanager.Mappers.ScoreMapper;
 import com.example.kuba.tvmanager.Mappers.TVShowMapper;
+import com.example.kuba.tvmanager.Mappers.WatchedMapper;
 import com.example.kuba.tvmanager.R;
 import com.example.kuba.tvmanager.Score;
 import com.example.kuba.tvmanager.ScoreTable;
 import com.example.kuba.tvmanager.TVShow;
+import com.example.kuba.tvmanager.Watched;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +57,7 @@ public class ShowDetailActivity extends AppCompatActivity {
     private String accountId;
     private int currentScore;
     private Button buttonCheck;
+    private ImageView imageMain;
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg){
@@ -93,6 +97,7 @@ public class ShowDetailActivity extends AppCompatActivity {
         scoreList = ScoreMapper.getScores(this);
         currentScore = 0;
         buttonCheck = (Button)findViewById(R.id.buttonCheck);
+        imageMain = (ImageView)findViewById(R.id.imageMain);
 
 
 
@@ -209,11 +214,55 @@ public class ShowDetailActivity extends AppCompatActivity {
         });
 
 
-
+        setupImage();
         //setYourScore();
         initialSet();
 
         textMessage.setText(show.getName());
+    }
+
+    private void setupImage() {
+        Bundle extra = getIntent().getExtras();
+        String showId = extra.getString("showId");
+
+        TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.parseInt(showId));
+
+        switch (show.getName()) {
+            case "The Walking Dead":
+                imageMain.setImageResource(R.drawable.twd);
+                break;
+            case "Game of Thrones":
+                imageMain.setImageResource(R.drawable.got);
+                break;
+            case "Lucifer":
+                imageMain.setImageResource(R.drawable.luc);
+                break;
+            case "Arrow":
+                imageMain.setImageResource(R.drawable.arr);
+                break;
+            case "The Flash":
+                imageMain.setImageResource(R.drawable.flash);
+                break;
+            case "Spartacus":
+                imageMain.setImageResource(R.drawable.spar);
+                break;
+            case "The Big Bang Theory":
+                imageMain.setImageResource(R.drawable.tbbt);
+                break;
+            case "How I Meet Your Mother":
+                imageMain.setImageResource(R.drawable.himym);
+                break;
+            case "Two and a half men":
+                imageMain.setImageResource(R.drawable.tam);
+                break;
+            case "Band of Brothers":
+                imageMain.setImageResource(R.drawable.bob);
+                break;
+            default:
+                imageMain.setImageResource(R.drawable.got);
+                break;
+
+        }
     }
 
     private void initialSet(){
@@ -415,6 +464,7 @@ public class ShowDetailActivity extends AppCompatActivity {
             final CheckedTextView seasonCheck = (CheckedTextView) convertView.findViewById(R.id.simpleCheckedTextView);
             //seasonCheck.setText(episodes.get(position).getName());
             //seasonCheck.setCheckMarkDrawable(0);
+
             seasonCheck.setText("Season " + numberOfSeasons.get(position));
             seasonCheck.setCheckMarkDrawable(null);
 

@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.example.kuba.tvmanager.Activities.ShowDetailActivity;
 import com.example.kuba.tvmanager.Mappers.AccountMapper;
 import com.example.kuba.tvmanager.Mappers.EpisodeMapper;
+import com.example.kuba.tvmanager.Mappers.TVShowMapper;
 import com.example.kuba.tvmanager.Mappers.WatchedMapper;
 
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ import java.util.Iterator;
 public class EpisodeListActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Episode> episodes;
+    private int counter = 0;
+    private ImageView imageMain;
 
     @Override
     public void onBackPressed() {
@@ -39,12 +42,58 @@ public class EpisodeListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_episode_list);
 
+        imageMain = (ImageView)findViewById(R.id.imageMain);
         listView = (ListView)findViewById(R.id.listWiev);
         episodes = filterEpisodes();
 
+        setupImage();
         final CustomAdapter adapter = new CustomAdapter();
         listView.setAdapter(adapter);
 
+    }
+
+    private void setupImage() {
+        Bundle extra = getIntent().getExtras();
+        String showId = extra.getString("showId");
+
+        TVShow show = TVShowMapper.selectShow(getApplicationContext(), Integer.parseInt(showId));
+
+        switch (show.getName()) {
+            case "The Walking Dead":
+                imageMain.setImageResource(R.drawable.twd);
+                break;
+            case "Game of Thrones":
+                imageMain.setImageResource(R.drawable.got);
+                break;
+            case "Lucifer":
+                imageMain.setImageResource(R.drawable.luc);
+                break;
+            case "Arrow":
+                imageMain.setImageResource(R.drawable.arr);
+                break;
+            case "The Flash":
+                imageMain.setImageResource(R.drawable.flash);
+                break;
+            case "Spartacus":
+                imageMain.setImageResource(R.drawable.spar);
+                break;
+            case "The Big Bang Theory":
+                imageMain.setImageResource(R.drawable.tbbt);
+                break;
+            case "How I Meet Your Mother":
+                imageMain.setImageResource(R.drawable.himym);
+                break;
+            case "Two and a half men":
+                imageMain.setImageResource(R.drawable.tam);
+                break;
+            case "Band of Brothers":
+                imageMain.setImageResource(R.drawable.bob);
+                break;
+            default:
+                imageMain.setImageResource(R.drawable.got);
+                break;
+
+        }
     }
 
     private ArrayList<Episode> filterEpisodes(){
@@ -110,12 +159,11 @@ public class EpisodeListActivity extends AppCompatActivity {
                     if(watchedList.get(i).getEpisodeId().getId().equals(episodes.get(position).getId()) && watchedList.get(i).getAccountId().getId().equals(myAccount)){
                         seasonCheck.setCheckMarkDrawable(R.drawable.checked);
                         seasonCheck.setChecked(true);
+                        counter++;
                     }
 
                 }
             }
-
-            //Toast.makeText(EpisodeListActivity.this, String.valueOf(watchedList.size()), Toast.LENGTH_SHORT).show();
 
 
 
@@ -134,7 +182,9 @@ public class EpisodeListActivity extends AppCompatActivity {
                         Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.parseInt(accountId));
                         Episode episode = EpisodeMapper.selectEpisode(getApplicationContext(), Integer.parseInt(episodeId));
                         WatchedMapper.add(getApplicationContext(), account, episode);
-                        Toast.makeText(EpisodeListActivity.this, episodeId, Toast.LENGTH_SHORT).show();
+
+                        counter++;
+                        Toast.makeText(EpisodeListActivity.this, String.valueOf(counter), Toast.LENGTH_SHORT).show();
                     }else{
                         seasonCheck.setChecked(false);
                         seasonCheck.setCheckMarkDrawable(null);
@@ -147,7 +197,8 @@ public class EpisodeListActivity extends AppCompatActivity {
                         Account account = AccountMapper.selectAccount(getApplicationContext(), Integer.parseInt(accountId));
                         Episode episode = EpisodeMapper.selectEpisode(getApplicationContext(), Integer.parseInt(episodeId));
                         WatchedMapper.deleteSpecific(getApplicationContext(), account, episode);
-
+                        counter--;
+                        Toast.makeText(EpisodeListActivity.this, String.valueOf(counter), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
