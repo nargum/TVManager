@@ -1,5 +1,5 @@
 # TVManager
-Project TAMZ2 2017 project
+Project TAMZ2 2017
 
 Aplication, that will allow you to keep track of TV shows, you are currently watching. 
 
